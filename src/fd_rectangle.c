@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *   @(#)  [MB] fd_rectangle.c Version 1.12 du 24/07/22 - 
+ *   @(#)  [MB] fd_rectangle.c Version 1.15 du 24/07/23 - 
  *
  *   This is a program to test ncurses before integration into RPN.
  */
@@ -301,34 +301,19 @@ void fd_print_matrix(fd_ref_matrix_elt matrix_elt, fd_ref_sub_matrix delta,
           _ptr           = _buf;
      }
 
-     start_color();
-
-     init_color(COLOR_BLACK,    0,   0,     0);
-     init_color(COLOR_RED,    800,   0,     0);
-     init_color(COLOR_GREEN,    0, 800,     0);
-     init_color(COLOR_BLUE,     0, 500,  1000);
-     init_color(COLOR_YELLOW, 800, 800,     0);
-     init_color(COLOR_CYAN,     0, 1000, 1000);
-     init_color(COLOR_WHITE, 1000, 1000, 1000);
-
-     init_pair(FD_BLUE,    COLOR_BLUE,   COLOR_BLACK);
-     init_pair(FD_CYAN,    COLOR_CYAN,   COLOR_BLACK);
-     init_pair(FD_GREEN,   COLOR_GREEN,  COLOR_BLACK);
-     init_pair(FD_YELLOW,  COLOR_YELLOW, COLOR_BLACK);
-     init_pair(FD_RED,     COLOR_RED,    COLOR_BLACK);
-     init_pair(FD_RED_REV, COLOR_BLACK,  COLOR_RED);
-     init_pair(FD_WHITE,   COLOR_WHITE,  COLOR_BLACK);
-
      /* Initialize next cursor position
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
      _y             = _y1 + 1;
      _x             = _x1 + 2;
-     move(_y, _x);
 
      for (_i = _i0; _i < _i0 +_dy; _i++) {
+          move(_y, _x);
+
           for (_j = _j0; _j < _j0 + _dx; _j++) {
                int                 _sz = sz + 1;
 
+               /* Display colorized coordinates of the element
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
                _color_pair         = FD_BLUE;
                attron(COLOR_PAIR(_color_pair));
                printw("[");
@@ -388,6 +373,8 @@ void fd_print_matrix(fd_ref_matrix_elt matrix_elt, fd_ref_sub_matrix delta,
           _matrix_elt.n       = matrix_elt->n;
           _matrix_elt.p       = matrix_elt->p;
 
+          /* Colorize component value
+             ~~~~~~~~~~~~~~~~~~~~~~~~ */
           for (_j = _j0; _j < _j0 + _dx; _j++) {
                _matrix_elt.pos.i   = _i;
                _matrix_elt.pos.j   = _j;
@@ -407,17 +394,19 @@ void fd_print_matrix(fd_ref_matrix_elt matrix_elt, fd_ref_sub_matrix delta,
                else if (_value < 0) {
                     _color_pair         = FD_RED_REV;
                }
+               else {
+                    _color_pair         = FD_BLUE;
+               }
                attron(COLOR_PAIR(_color_pair));
                printw("%*f", sz, (double) fd_value(&_matrix_elt));
                attroff(COLOR_PAIR(_color_pair));
                printw(" ");
           }
           _y        += 2;
-          move(_y, _x);
 // mvprintw(y1 + 1, _x1 + 2, s);
-
      }
 
+     move(_y, 1);
      refresh();
 
      if (_dyn_buf) {
@@ -557,9 +546,26 @@ int main(int argc, char *argv[])
      /* Initialize window
         ~~~~~~~~~~~~~~~~~ */
      initscr();               /* Start curses mode */
+     start_color();           /* Use colors */
      raw();                   /* Line buffering disabled */
      keypad(stdscr, TRUE);    /* We get F1, F2 etc.. */
      noecho();                /* Don't echo() while we do getch */
+
+     init_color(COLOR_BLACK,    0,   0,     0);
+     init_color(COLOR_RED,    800,   0,     0);
+     init_color(COLOR_GREEN,    0, 800,     0);
+     init_color(COLOR_BLUE,     0, 500,  1000);
+     init_color(COLOR_YELLOW, 800, 800,     0);
+     init_color(COLOR_CYAN,     0, 1000, 1000);
+     init_color(COLOR_WHITE, 1000, 1000, 1000);
+
+     init_pair(FD_BLUE,    COLOR_BLUE,   COLOR_BLACK);
+     init_pair(FD_CYAN,    COLOR_CYAN,   COLOR_BLACK);
+     init_pair(FD_GREEN,   COLOR_GREEN,  COLOR_BLACK);
+     init_pair(FD_YELLOW,  COLOR_YELLOW, COLOR_BLACK);
+     init_pair(FD_RED,     COLOR_RED,    COLOR_BLACK);
+     init_pair(FD_RED_REV, COLOR_BLACK,  COLOR_RED);
+     init_pair(FD_WHITE,   COLOR_WHITE,  COLOR_BLACK);
 
      printw("RPN test of matrix display\n");
      printw("Matrix dimensions        : %5d x %5d\n", _matrix_elt.n, _matrix_elt.p);
